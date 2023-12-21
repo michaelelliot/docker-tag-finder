@@ -9,7 +9,15 @@ It identifies the unique hash of the given image tag and lists all tags that poi
 ## Usage
 
 ```sh
-docker-tag-finder IMAGE[:TAG]
+$ docker-tag-finder IMAGE[:TAG]
+```
+
+## Example
+
+```sh
+$ ./docker-tag-finder aztecprotocol/cli:latest
+latest
+0.16.9
 ```
 
 ## License
