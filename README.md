@@ -15,7 +15,7 @@ $ docker-tag-finder IMAGE[:TAG]
 ## Example
 
 ```sh
-$ ./docker-tag-finder aztecprotocol/cli:latest
+$ ./docker-tag-finder aztecprotocol/aztec-sandbox:latest
 latest
 0.16.9
 ```

@@ -11,8 +11,8 @@ validate_input() {
         echo "Error: No image or tag provided. Please provide an image name, optionally followed by a tag."
         exit 1
     fi
-    if [[ $1 =~ [^a-zA-Z0-9\/] ]]; then
-        echo "Error: Invalid characters in input. Only [a-zA-Z0-9\\] are allowed."
+    if [[ $1 =~ [^-a-zA-Z0-9/_\\.\\:\\+] ]]; then
+        echo "Error: Invalid characters in input."
         exit 1
     fi
 }
