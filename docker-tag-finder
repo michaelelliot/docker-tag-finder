@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+#
+# docker-tag-finder
+#
+# Fetches and displays all tags associated with a specified Docker image and
+# tag combination from Docker Hub. Identifies the unique hash of the given
+# image tag and lists all tags that point to the same hash.
+
+validate_input() {
+    if [ -z "$1" ]; then
+        echo "Error: No image or tag provided. Please provide an image name, optionally followed by a tag."
+        exit 1
+    fi
+    if [[ $1 =~ [^a-zA-Z0-9\/] ]]; then
+        echo "Error: Invalid characters in input. Only [a-zA-Z0-9\\] are allowed."
+        exit 1
+    fi
+}
+show_usage() {
+    echo "Fetches and displays all tags associated with"
+    echo "a specified Docker image and tag combination."
+    echo
+    echo "Usage: docker-tag-finder IMAGE[:TAG]"
+    echo
+}
+
+if [ $# -eq 0 ]; then
+    show_usage
+    exit 1
+fi
+
+IFS=':' read -r image_name tag <<< "$1"
+
+if [ -z "$tag" ]; then
+    tag="latest"
+fi
+
+validate_input "$image_name"
+validate_input "$tag"
+
+# Check if namespace is present in image_name, otherwise default to "library" namespace
+if [[ $image_name != *"/"* ]]; then
+    image_name="library/$image_name"
+fi
+
+URL="https://registry.hub.docker.com/v2/repositories/${image_name}/tags/?page_size=10000"
+
+json_data=$(curl -s "$URL")
+
+# Check if image is not found
+if [ "$json_data" == "404 page not found" ]; then
+    echo "No image found for '$image_name'. Please check the image name and try again."
+    exit 1
+fi
+
+tag_digest=$(echo "$json_data" | jq -r --arg tag "$tag" '.results[] | select(.name==$tag) | .digest')
+
+# Check if tag_digest is empty or null
+if [ -z "$tag_digest" ] || [ "$tag_digest" == "null" ]; then
+    echo "Tag '$tag' for image '$image_name' not found."
+    exit 1
+fi
+
+# Find and print the names of other entries with the same digest
+echo "$json_data" | jq -r --arg tag_digest "$tag_digest" '.results[] | select(.digest==$tag_digest) | .name'
